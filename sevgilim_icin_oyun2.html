@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senin İçin Bir Sürpriz! 💝</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            border: 5px solid #ff6b9d;
+        }
+        
+        h1 {
+            color: #ff6b9d;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 0 #ffe0e9;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+        
+        #gameCanvas {
+            display: block;
+            margin: 20px auto;
+            border: 3px solid #ff6b9d;
+            border-radius: 15px;
+            background: linear-gradient(180deg, #e6f7ff, #ffe6f2);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        #gameCanvas:hover {
+            transform: scale(1.02);
+        }
+        
+        .score-board {
+            background: linear-gradient(90deg, #ff6b9d, #ff8fab);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: inline-block;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
+        }
+        
+        .message {
+            background: #fff9c4;
+            border-left: 5px solid #ffd600;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .message.show {
+            display: block;
+        }
+        
+        .hearts-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .heart {
+            font-size: 2em;
+            animation: float 2s infinite ease-in-out;
+        }
+        
+        .heart:nth-child(2) { animation-delay: 0.4s; }
+        .heart:nth-child(3) { animation-delay: 0.8s; }
+        
+        .instructions {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #555;
+            border: 2px dashed #87ceeb;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .game-over {
+            color: #ff6b9d;
+            font-size: 2em;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(90deg, #36d1dc, #5b86e5);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: none;
+        }
+        
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(91, 134, 229, 0.4);
+        }
+        
+        footer {
+            margin-top: 25px;
+            color: #888;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>💖 FDK İle Kalp Avı Oyunu 💖</h1>
+        <p class="subtitle">Kız arkadaşım Damla için özel yapılmıştır! ❤️</p>
+        
+        <div class="hearts-container">
+            <div class="heart">💗</div>
+            <div class="heart">💝</div>
+            <div class="heart">💓</div>
+        </div>
+        
+        <div class="score-board">
+            SKOR: <span id="score">0</span>
+        </div>
+        
+        <canvas id="gameCanvas" width="450" height="400"></canvas>
+        
+        <div id="message1" class="message">
+            🎉 İlk 5 puanı topladın! Seni çok seviyorum! 💕
+        </div>
+        
+        <div id="message2" class="message">
+            🌟 15 puan! Sen harikasın! Birlikte daha nice güzel anılarımız olsun! ✨
+        </div>
+        
+        <div id="message3" class="message">
+            🏆 25 Puan! Tebrikler, oyunu tamamladın! Sen benim her şeyimsin güzelim! 💘
+        </div>
+        
+        <div id="gameOver" class="game-over">
+            Oyun Bitti! Sen muhteşemsin aşkımm! 🎊
+        </div>
+        
+        <button id="restartBtn" class="restart-btn">Yeniden Başlat 🔄</button>
+        
+        <div class="instructions">
+            🎯 <strong>Nasıl Oynanır:</strong> Ekranda beliren kalplere tıkla veya dokun!<br>
+            ⏱️ Her kalp 2 saniye sonra kaybolur, hızlı ol!
+        </div>
+        
+        <footer>
+            Özel olarak senin için yapıldı 💝 | Her tıkla daha çok seviyorum! ❤️FDK❤️
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const gameOverElement = document.getElementById('gameOver');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        let score = 0;
+        let gameActive = true;
+        let hearts = [];
+        let lastHeartTime = 0;
+        const heartInterval = 1000; // 1 saniyede bir yeni kalp
+        const heartLifetime = 2000; // Kalp 2 saniye ekranda kalır
+        
+        // Kalp sınıfı
+        class Heart {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 25 + 25; // 25-50px arası
+                this.speedY = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 3;
+                this.color = this.getRandomColor();
+                this.createdAt = Date.now();
+                this.pulse = 0;
+                this.pulseSpeed = Math.random() * 0.05 + 0.02;
+            }
+            
+            getRandomColor() {
+                const colors = [
+                    '#FF6B9D', '#FF8E53', '#FFD166', '#06D6A0', '#118AB2',
+                    '#EF476F', '#9B5DE5', '#F15BB5', '#00BBF9', '#00F5D4'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                
+                // Ekran sınırları
+                if (this.x < this.size) this.x = this.size;
+                if (this.x > canvas.width - this.size) this.x = canvas.width - this.size;
+                if (this.y > canvas.height) return false;
+                
+                // Nabız efekti
+                this.pulse += this.pulseSpeed;
+                
+                return (Date.now() - this.createdAt) < heartLifetime;
+            }
+            
+            draw() {
+                // Nabız efekti için boyut
+                const pulseSize = this.size * (1 + Math.sin(this.pulse) * 0.1);
+                
+                // Kalp çizimi
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                
+                // Kalp gölgesi
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                
+                // Kalp çiz
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(0, -pulseSize/2);
+                ctx.bezierCurveTo(
+                    pulseSize/2, -pulseSize,
+                    pulseSize, 0,
+                    0, pulseSize
+                );
+                ctx.bezierCurveTo(
+                    -pulseSize, 0,
+                    -pulseSize/2, -pulseSize,
+                    0, -pulseSize/2
+                );
+                ctx.fill();
+                
+                ctx.restore();
+            }
+            
+            isClicked(x, y) {
+                const distance = Math.sqrt(
+                    Math.pow(x - this.x, 2) + 
+                    Math.pow(y - this.y, 2)
+                );
+                return distance < this.size;
+            }
+        }
+        
+        // Yeni kalp ekle
+        function addHeart() {
+            const x = Math.random() * (canvas.width - 50) + 25;
+            hearts.push(new Heart(x, -50));
+        }
+        
+        // Tıklama olayı
+        canvas.addEventListener('click', function(e) {
+            if (!gameActive) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Tıklanan kalpleri kontrol et
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                if (hearts[i].isClicked(clickX, clickY)) {
+                    // Kalbi kaldır
+                    hearts.splice(i, 1);
+                    score++;
+                    scoreElement.textContent = score;
+                    
+                    // Patlama efekti
+                    createExplosion(clickX, clickY);
+                    
+                    // Özel mesajları göster
+                    showSpecialMessage();
+                    break;
+                }
+            }
+        });
+        
+        // Patlama efekti
+        function createExplosion(x, y) {
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const particle = {
+                        x: x,
+                        y: y,
+                        size: Math.random() * 8 + 4,
+                        speedX: (Math.random() - 0.5) * 10,
+                        speedY: (Math.random() - 0.5) * 10,
+                        color: '#FF6B9D',
+                        life: 30
+                    };
+                    
+                    function drawParticle() {
+                        ctx.fillStyle = particle.color;
+                        ctx.beginPath();
+                        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        particle.x += particle.speedX;
+                        particle.y += particle.speedY;
+                        particle.life--;
+                        particle.size *= 0.95;
+                        
+                        if (particle.life > 0) {
+                            requestAnimationFrame(drawParticle);
+                        }
+                    }
+                    
+                    drawParticle();
+                }, i * 30);
+            }
+        }
+        
+        // Özel mesajlar
+        function showSpecialMessage() {
+            const messages = [
+                { score: 5, id: 'message1' },
+                { score: 15, id: 'message2' },
+                { score: 25, id: 'message3' }
+            ];
+            
+            messages.forEach(msg => {
+                if (score === msg.score) {
+                    const element = document.getElementById(msg.id);
+                    element.classList.add('show');
+                    setTimeout(() => {
+                        element.classList.remove('show');
+                    }, 3000);
+                }
+            });
+            
+            // Oyun bitişi
+            if (score >= 30) {
+                gameActive = false;
+                gameOverElement.style.display = 'block';
+                restartBtn.style.display = 'block';
+            }
+        }
+        
+        // Oyun döngüsü
+        function gameLoop() {
+            // Ekranı temizle
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Arkaplan deseni
+            drawBackground();
+            
+            // Yeni kalp ekle
+            const now = Date.now();
+            if (now - lastHeartTime > heartInterval) {
+                addHeart();
+                lastHeartTime = now;
+            }
+            
+            // Kalpleri güncelle ve çiz
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                if (!hearts[i].update()) {
+                    hearts.splice(i, 1);
+                } else {
+                    hearts[i].draw();
+                }
+            }
+            
+            // Skor yazısı
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Comic Sans MS';
+            ctx.fillText(`Kalan Kalp: ${hearts.length}`, 20, 30);
+            
+            // Devam et
+            if (gameActive) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Arkaplan deseni
+        function drawBackground() {
+            // Gradient arkaplan
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#ffe6f2');
+            gradient.addColorStop(1, '#e6f7ff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Uçuşan minik kalpler
+            ctx.fillStyle = 'rgba(255, 107, 157, 0.1)';
+            for (let i = 0; i < 5; i++) {
+                const x = (Date.now() / 1000 * 20 + i * 100) % canvas.width;
+                const y = (Math.sin(Date.now() / 1000 + i) * 50 + i * 80) % canvas.height;
+                drawMiniHeart(x, y, 10);
+            }
+        }
+        
+        // Minik kalp çizimi
+        function drawMiniHeart(x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = 'rgba(255, 107, 157, 0.2)';
+            ctx.beginPath();
+            ctx.moveTo(0, -size/2);
+            ctx.bezierCurveTo(size/2, -size, size, 0, 0, size);
+            ctx.bezierCurveTo(-size, 0, -size/2, -size, 0, -size/2);
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // Yeniden başlat
+        restartBtn.addEventListener('click', function() {
+            score = 0;
+            hearts = [];
+            gameActive = true;
+            scoreElement.textContent = '0';
+            gameOverElement.style.display = 'none';
+            restartBtn.style.display = 'none';
+            gameLoop();
+        });
+        
+        // Oyunu başlat
+        gameLoop();
+        
+        // İlk kalbi ekle
+        addHeart();
+    </script>
+</body>
+</html>
